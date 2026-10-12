@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C0DEbreaker: Star Wars Escape</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Press+Start+2P&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom Star Wars Imperial Interior Theme */
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #030712;
+            color: #f1f5f9;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .font-pixel { font-family: 'Press Start 2P', monospace; }
+
+        /* Star Wars Yellow Theme Accents */
+        .sw-yellow-text {
+            color: #FFE81F;
+            text-shadow: 0 0 10px rgba(255, 232, 31, 0.5);
+        }
+
+        /* Imperial White Panel Styling with sharp black seam lines */
+        .imperial-panel {
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+            border: 3px solid #000000;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8), inset 0 0 0 2px rgba(255, 255, 255, 0.9);
+            color: #0f172a;
+        }
+
+        .imperial-dark-panel {
+            background: #090d16;
+            border: 2px solid #1e293b;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.9), 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Undertale style C-3PO dialogue box */
+        .dialogue-box {
+            background-color: #000000;
+            border: 4px solid #FFE81F;
+            box-shadow: 0 0 20px rgba(255, 232, 31, 0.4);
+            border-radius: 6px;
+        }
+
+        /* Type selection button state */
+        .type-btn {
+            background: #0f172a;
+            border: 2px solid #334155;
+            color: #94a3b8;
+            transition: all 0.2s ease;
+        }
+
+        .type-btn:hover {
+            border-color: #FFE81F;
+            color: #FFE81F;
+        }
+
+        .type-btn.selected {
+            background: #FFE81F;
+            border-color: #ffffff;
+            color: #000000;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255, 232, 31, 0.7);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-2 md:p-4 bg-slate-950 text-slate-100">
+
+    <!-- TOP STATUS BAR (Timer, Shields, Sector Info) -->
+    <header class="max-w-5xl mx-auto w-full mb-3 imperial-panel rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 border-2 border-black">
+        <!-- Title & Sector -->
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-lg bg-black flex items-center justify-center font-orbitron font-black text-amber-400 text-xl border-2 border-amber-400 shadow-md">
+                <!-- Imperial Emblem SVG -->
+                <svg class="w-8 h-8 fill-amber-400" viewBox="0 0 24 24">
+                    <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6L10,9H14L12,6M7,10L5,13H8L9.5,10.5L7,10M17,10L14.5,10.5L16,13H19L17,10M12,11A1,1 0 0,0 11,12A1,1 0 0,0 12,13A1,1 0 0,0 13,12A1,1 0 0,0 12,11M8.5,13.5L7,16H10L11,14L8.5,13.5M15.5,13.5L13,14L14,16H17L15.5,13.5M12,15L10,18H14L12,15Z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-black tracking-widest text-black bg-amber-400 px-1.5 py-0.5 rounded">STAR WARS</span>
+                    <h1 class="font-orbitron font-black text-lg md:text-xl tracking-wider text-slate-950 leading-none">C0DEBREAKER</h1>
+                </div>
+                <p id="sectorBadge" class="text-xs font-bold text-slate-800 mt-1 uppercase tracking-widest flex items-center gap-1">
+                    <span>🛸</span> Sector 1: Imperial Cargo Hold
+                </p>
+            </div>
+        </div>
+
+        <!-- Timer & Shields -->
+        <div class="flex items-center gap-4 md:gap-8">
+            <!-- Door Counter -->
+            <div class="text-center">
+                <span class="text-xs uppercase font-bold text-slate-600 block">Deur</span>
+                <span id="doorCounter" class="font-orbitron font-bold text-lg text-slate-900">1 / 10</span>
+            </div>
+
+            <!-- Timer -->
+            <div class="text-center bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
+                <span class="text-[10px] uppercase font-bold text-amber-500 block">Tijd Over</span>
+                <span id="timerDisplay" class="font-orbitron font-bold text-xl text-amber-400">07:00</span>
+            </div>
+
+            <!-- Shields / Hearts -->
+            <div class="text-center">
+                <span class="text-xs uppercase font-bold text-slate-600 block">Schilden</span>
+                <div id="shieldsContainer" class="flex gap-1 text-red-600 text-lg">
+                    <span>🛡️</span><span>🛡️</span><span>🛡️</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN GAME LAYOUT -->
+    <main class="max-w-5xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow">
+
+        <!-- LEFT / TOP COLUMN: Visual Ship Canvas & C-3PO Dialogue (7 Cols) -->
+        <section class="lg:col-span-7 flex flex-col gap-3">
+            <!-- Canvas Window (Ship Corridor / Cockpit) -->
+            <div class="relative w-full aspect-[16/9] bg-slate-900 rounded-xl overflow-hidden border-2 border-slate-800 shadow-2xl">
+                <canvas id="shipCanvas" class="w-full h-full block"></canvas>
+                <!-- Overlay Door Status Badge -->
+                <div class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur px-3 py-1 rounded border border-slate-700 text-xs font-orbitron text-amber-400">
+                    STATUS: <span id="doorStatusText" class="text-red-400">VERGRENDELD</span>
+                </div>
+            </div>
+
+            <!-- C-3PO Undertale Style Dialogue Box -->
+            <div class="dialogue-box p-3 md:p-4 flex gap-3 md:gap-4 items-center">
+                <!-- C3PO Pixel Avatar -->
+                <div class="w-16 h-16 md:w-20 md:h-20 bg-amber-950/40 border-2 border-amber-500 rounded flex-shrink-0 flex items-center justify-center relative overflow-hidden">
+                    <canvas id="c3poAvatarCanvas" width="80" height="80"></canvas>
+                </div>
+                <!-- Dialogue Text Container -->
+                <div class="flex-grow">
+                    <div class="text-amber-400 text-xs font-orbitron font-bold mb-1 flex items-center gap-2">
+                        <span>C-3PO PROTOCOL DROID</span>
+                        <span id="typingIndicator" class="hidden w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                    </div>
+                    <div id="dialogueText" class="font-pixel text-xs md:text-sm text-white leading-relaxed min-h-[3.5rem] whitespace-pre-wrap">
+                        Aanbiddelijke goedheid, R2! We moeten snel handelen...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: Math Problem, Formula Selection & Calculator (5 Cols) -->
+        <section class="lg:col-span-5 flex flex-col gap-3">
+            <!-- Lock Problem Terminal Panel -->
+            <div class="imperial-dark-panel rounded-xl p-4 flex flex-col justify-between flex-grow">
+                <div>
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
+                        <span class="font-orbitron font-bold text-amber-400 text-sm">DEURSLOT BEVEILIGING</span>
+                        <button onclick="toggleFormulaSheet()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded border border-slate-600 transition">
+                            📖 Formules
+                        </button>
+                    </div>
+
+                    <!-- Problem Scenario Description -->
+                    <div id="problemText" class="text-slate-200 text-sm leading-relaxed mb-4 bg-slate-950/60 p-3 rounded-lg border border-slate-800">
+                        Laden van beveiligingsprotocol...
+                    </div>
+
+                    <!-- STEP 1: Select Formula Type -->
+                    <div class="mb-4">
+                        <label class="block text-xs font-orbitron font-bold text-amber-400 mb-2">1. KIES HET TYPE FORMULE:</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="selectType('permutatie')" id="type-permutatie" class="type-btn py-2 px-1 text-center rounded text-xs font-bold">
+                                Permutatie<br><span class="text-[9px] opacity-75 font-normal">(Volgorde Telt)</span>
+                            </button>
+                            <button onclick="selectType('combinatie')" id="type-combinatie" class="type-btn py-2 px-1 text-center rounded text-xs font-bold">
+                                Combinatie<br><span class="text-[9px] opacity-75 font-normal">(Geen Volgorde)</span>
+                            </button>
+                            <button onclick="selectType('herhaling')" id="type-herhaling" class="type-btn py-2 px-1 text-center rounded text-xs font-bold">
+                                Herhaling<br><span class="text-[9px] opacity-75 font-normal">(Met Herhaling)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: Calculated Value Input -->
+                    <div class="mb-4">
+                        <label class="block text-xs font-orbitron font-bold text-amber-400 mb-1">2. VOER HET BEREKENDE AANTAL MOGELIJKHEDEN IN:</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="codeInput" placeholder="Aantal opties..." class="bg-slate-950 border-2 border-slate-700 focus:border-amber-500 text-amber-300 font-orbitron text-lg px-3 py-2 rounded-lg w-full outline-none transition">
+                            <button onclick="submitCode()" class="bg-emerald-600 hover:bg-emerald-500 font-orbitron font-bold text-slate-950 px-4 py-2 rounded-lg border border-emerald-400 shadow-lg transition active:scale-95">
+                                HACK DEUR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Integrated Calculator -->
+                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 mt-2">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[10px] font-orbitron text-slate-400">REKENMACHINE</span>
+                        <div id="calcDisplay" class="font-orbitron text-sm text-emerald-400 font-bold overflow-x-auto whitespace-nowrap px-1">0</div>
+                    </div>
+                    <!-- Calculator Keypad -->
+                    <div class="grid grid-cols-4 gap-1 text-xs">
+                        <button onclick="calcInput('(')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-slate-200 font-bold">(</button>
+                        <button onclick="calcInput(')')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-slate-200 font-bold">)</button>
+                        <button onclick="calcInput('!')" class="bg-amber-900/60 hover:bg-amber-800 text-amber-300 p-2 rounded font-bold">n!</button>
+                        <button onclick="calcInput('^')" class="bg-amber-900/60 hover:bg-amber-800 text-amber-300 p-2 rounded font-bold">n^k</button>
+
+                        <button onclick="calcInput('7')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded font-bold">7</button>
+                        <button onclick="calcInput('8')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded font-bold">8</button>
+                        <button onclick="calcInput('9')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded font-bold">9</button>
+                        <button onclick="calcInput('/')" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-amber-400 font-bold">÷</button>
+
+                        <button onclick="calcInput('4')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded font-bold">4</button>
+                        <button onclick="calcInput('5')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded font-bold">5</button>
+                        <button onclick="calcInput('6')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded font-bold">6</button>
+                        <button onclick="calcInput('*')" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-amber-400 font-bold">×</button>
+
+                        <button onclick="calcInput('1')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded font-bold">1</button>
+                        <button onclick="calcInput('2')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded font-bold">2</button>
+                        <button onclick="calcInput('3')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded font-bold">3</button>
+                        <button onclick="calcInput('-')" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-amber-400 font-bold">-</button>
+
+                        <button onclick="calcClear()" class="bg-red-900/60 hover:bg-red-800 text-red-300 p-2 rounded font-bold">C</button>
+                        <button onclick="calcInput('0')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded font-bold">0</button>
+                        <button onclick="calcEvaluate()" class="bg-amber-600 hover:bg-amber-500 text-slate-950 p-2 rounded font-bold">=</button>
+                        <button onclick="calcInput('+')" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-amber-400 font-bold">+</button>
+                    </div>
+                    <button onclick="useCalcResult()" class="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-amber-400 text-[11px] py-1 rounded border border-slate-700 font-bold">
+                        ↳ Kopieer Uitkomst naar Invoerveld
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FORMULA CHEAT SHEET MODAL -->
+    <div id="formulaModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="imperial-panel max-w-lg w-full p-6 rounded-2xl relative shadow-2xl">
+            <button onclick="toggleFormulaSheet()" class="absolute top-4 right-4 text-slate-900 font-bold text-xl hover:text-red-600">✕</button>
+            <h2 class="font-orbitron font-black text-xl text-slate-900 mb-4 border-b border-slate-400 pb-2">📖 COMBINATORIEK SPIEKSCHRIFT</h2>
+            
+            <div class="space-y-4 text-slate-900 text-sm">
+                <div class="bg-white/80 p-3 rounded-lg border border-slate-300">
+                    <h3 class="font-bold text-amber-800 font-orbitron">1. PERMUTATIE (Volgorde telt, geen herhaling)</h3>
+                    <p class="text-xs text-slate-700 mb-1">Hoeveel manieren om $k$ elementen te kiezen uit $n$ unieke opties waarbij de volgorde van belang is.</p>
+                    <div class="font-mono text-xs bg-slate-950 text-amber-400 p-2 rounded">Formule: n! / (n - k)!</div>
+                </div>
+
+                <div class="bg-white/80 p-3 rounded-lg border border-slate-300">
+                    <h3 class="font-bold text-blue-800 font-orbitron">2. COMBINATIE (Volgorde telt NIET, geen herhaling)</h3>
+                    <p class="text-xs text-slate-700 mb-1">Hoeveel groepen van $k$ elementen te kiezen uit $n$ opties waarbij de volgorde NIET uitmaakt.</p>
+                    <div class="font-mono text-xs bg-slate-950 text-blue-400 p-2 rounded">Formule: n! / (k! * (n - k)!)</div>
+                </div>
+
+                <div class="bg-white/80 p-3 rounded-lg border border-slate-300">
+                    <h3 class="font-bold text-emerald-800 font-orbitron">3. HERHALING (Volgorde telt, wel herhaling)</h3>
+                    <p class="text-xs text-slate-700 mb-1">Pincodes of codes waarbij elk van de $k$ posities gekozen kan worden uit $n$ opties.</p>
+                    <div class="font-mono text-xs bg-slate-950 text-emerald-400 p-2 rounded">Formule: n^k</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME OVER / WIN MODAL -->
+    <div id="endModal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="imperial-panel max-w-md w-full p-6 rounded-2xl text-center shadow-2xl">
+            <h2 id="endTitle" class="font-orbitron font-black text-2xl text-slate-900 mb-2">MISSIE VOLTOOID!</h2>
+            <p id="endDescription" class="text-slate-800 text-sm mb-6">Je hebt de cockpit bereikt en de hyperdrive gehackt naar Tatooine!</p>
+            <button onclick="resetGame()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-orbitron font-bold py-3 px-6 rounded-xl border-2 border-slate-900 shadow-lg">
+                SPEEL OPNIEUW
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Audio Synthesizer Engine
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playR2D2Sound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            const now = audioCtx.currentTime;
+            osc.frequency.setValueAtTime(600 + Math.random() * 800, now);
+            osc.frequency.exponentialRampToValueAtTime(300 + Math.random() * 1200, now + 0.15);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.15);
+        }
+
+        function playC3POSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            const now = audioCtx.currentTime;
+            osc.frequency.setValueAtTime(180 + Math.random() * 60, now);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.05);
+        }
+
+        function playDoorSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const bufferSize = audioCtx.sampleRate * 0.5;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(800, audioCtx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.5);
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            noise.start();
+        }
+
+        function factorial(n) {
+            if (n < 0) return 0;
+            if (n === 0 || n === 1) return 1;
+            let result = 1;
+            for (let i = 2; i <= n; i++) result *= i;
+            return result;
+        }
+
+        function permutation(n, k) {
+            return factorial(n) / factorial(n - k);
+        }
+
+        function combination(n, k) {
+            return factorial(n) / (factorial(k) * factorial(n - k));
+        }
+
+        function repetition(n, k) {
+            return Math.pow(n, k);
+        }
+
+        // Dynamic Question Generator
+        function generateRandomQuestion(doorIndex) {
+            // Difficulty scaling
+            let minN, maxN, minK, maxK;
+            if (doorIndex < 3) {
+                // Easy
+                minN = 4; maxN = 6; minK = 2; maxK = 3;
+            } else if (doorIndex < 7) {
+                // Medium
+                minN = 6; maxN = 8; minK = 3; maxK = 4;
+            } else {
+                // Hard
+                minN = 7; maxN = 9; minK = 4; maxK = 5;
+            }
+
+            const types = ['permutatie', 'combinatie', 'herhaling'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const n = Math.floor(Math.random() * (maxN - minN + 1)) + minN;
+            const k = Math.min(Math.floor(Math.random() * (maxK - minK + 1)) + minK, n);
+
+            let questionText = "";
+            let targetAnswer = 0;
+
+            if (type === 'permutatie') {
+                targetAnswer = permutation(n, k);
+                const scenarios = [
+                    `Een kluisje heeft ${k} posities op een rij. Je hebt ${n} verschillende unieke sleutels (1 t/m ${n}). De VOLGORDE waarin je de sleutels plaatst maakt uit en elke sleutel kan maar 1x gebruikt worden.`,
+                    `Er moeten ${k} beveiligingsofficieren gekozen worden uit een groep van ${n} kandidaten voor de functies Kapitein, Luitenant en Sergeant. De VOLGORDE/FUNCTIE telt en herhaling kan niet.`,
+                    `Een beveiligingsscherm vereist een volgorde van ${k} unieke symbolen gekozen uit een verzameling van ${n} symbolen. Volgorde is van cruciaal belang!`
+                ];
+                questionText = scenarios[Math.floor(Math.random() * scenarios.length)];
+            } else if (type === 'combinatie') {
+                targetAnswer = combination(n, k);
+                const scenarios = [
+                    `Voor de poortbediening moeten er ${k} kabels tegelijkertijd verbonden worden gekozen uit een bundel van ${n} kabels. De VOLGORDE van verbinden maakt NIET uit.`,
+                    `Je moet een team van ${k} Droids selecteren uit een voorraad van ${n} Droids om de stroomknooppunten uit te schakelen. De volgorde van selectie telt niet.`,
+                    `Het slot vraagt om een combinatie van ${k} cijfers gekozen uit ${n} opties. Welke cijfers je kiest maakt uit, maar de VOLGORDE telt NIET.`
+                ];
+                questionText = scenarios[Math.floor(Math.random() * scenarios.length)];
+            } else if (type === 'herhaling') {
+                targetAnswer = repetition(n, k);
+                const scenarios = [
+                    `Een digitaal deurslot gebruikt een pincode van ${k} cijfers. Voor elk cijfer kun je kiezen uit ${n} verschillende knoppen (${0} t/m ${n-1}). Cijfers MOGEN HERHAALD worden!`,
+                    `De beveiligingscomputer vereist een wachtwoord van ${k} karakters. Elk karakter wordt gekozen uit ${n} mogelijke opties. Herhaling van karakters is toegestaan en de volgorde telt!`,
+                    `Er zijn ${k} opeenvolgende schakelaars. Elke schakelaar heeft ${n} verschillende standen. Hoeveel verschillende totale instellingen zijn er mogelijk?`
+                ];
+                questionText = scenarios[Math.floor(Math.random() * scenarios.length)];
+            }
+
+            return {
+                type: type,
+                n: n,
+                k: k,
+                text: questionText,
+                answer: targetAnswer
+            };
+        }
+
+        // Game State Variables
+        let currentDoor = 1;
+        const totalDoors = 10;
+        let shields = 3;
+        let timerSeconds = 420; // 7 minutes
+        let timerInterval = null;
+        let selectedType = null;
+        let currentQuestion = null;
+        let doorOpenProgress = 0; // 0 = closed, 1 = fully open
+        let isDoorOpening = false;
+        let calcExpression = "";
+
+        // Canvas Rendering Engine
+        const canvas = document.getElementById('shipCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let gonkX = 0;
+        let mouseDroidX = 0;
+
+        function drawShipScene() {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Update ambient animation variables
+            gonkX = (gonkX + 0.5) % (w * 0.4);
+            mouseDroidX = (mouseDroidX + 2) % (w + 100);
+
+            // Background Corridor / Cockpit
+            if (currentDoor === 10) {
+                // Cockpit View with hyperspace stars
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = '#ffffff';
+                for (let i = 0; i < 50; i++) {
+                    const x = (Math.sin(i * 99 + Date.now() * 0.001) * 0.5 + 0.5) * w;
+                    const y = (Math.cos(i * 33 + Date.now() * 0.001) * 0.5 + 0.5) * h;
+                    ctx.fillRect(x, y, 2, 2);
+                }
+            } else {
+                // Imperial Corridor
+                ctx.fillStyle = '#090d16';
+                ctx.fillRect(0, 0, w, h);
+
+                // Iconic Death Star Vertical Light Panels
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ffffff';
+                for (let i = 0; i < 4; i++) {
+                    ctx.fillRect(w * 0.05 + i * 25, h * 0.25, 12, h * 0.45);
+                    ctx.fillRect(w * 0.88 + i * 25, h * 0.25, 12, h * 0.45);
+                }
+                ctx.shadowBlur = 0;
+
+                // Perspective Corridor Lines
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, 0); ctx.lineTo(w * 0.3, h * 0.3);
+                ctx.moveTo(w, 0); ctx.lineTo(w * 0.7, h * 0.3);
+                ctx.moveTo(0, h); ctx.lineTo(w * 0.3, h * 0.8);
+                ctx.moveTo(w, h); ctx.lineTo(w * 0.7, h * 0.8);
+                ctx.stroke();
+
+                // Sliding Hydraulic Doors
+                const doorWidth = w * 0.22;
+                const doorLeftX = w * 0.3 - (doorOpenProgress * doorWidth);
+                const doorRightX = w * 0.48 + (doorOpenProgress * doorWidth);
+
+                // Left Door Leaf (Imperial White with black stripes)
+                ctx.fillStyle = '#e2e8f0';
+                ctx.strokeStyle = '#020617';
+                ctx.lineWidth = 3;
+                ctx.fillRect(doorLeftX, h * 0.3, doorWidth, h * 0.5);
+                ctx.strokeRect(doorLeftX, h * 0.3, doorWidth, h * 0.5);
+
+                // Right Door Leaf
+                ctx.fillRect(doorRightX, h * 0.3, doorWidth, h * 0.5);
+                ctx.strokeRect(doorRightX, h * 0.3, doorWidth, h * 0.5);
+
+                // Door Lock Light
+                ctx.fillStyle = (doorOpenProgress > 0.8) ? '#22c55e' : '#ef4444';
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = ctx.fillStyle;
+                ctx.beginPath();
+                ctx.arc(w * 0.5, h * 0.28, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // ROOM DETAILS BASED ON SECTOR:
+                if (currentDoor <= 3) {
+                    // Sector 1: Gonk Droid
+                    drawGonkDroid(w * 0.1 + gonkX, h * 0.72, 0.6);
+                } else if (currentDoor <= 6) {
+                    // Sector 2: Guarding Stormtrooper in background
+                    drawStormtrooper(w * 0.72, h * 0.52, 0.55);
+                } else {
+                    // Sector 3: Mouse Droid
+                    drawMouseDroid(-50 + mouseDroidX, h * 0.82, 0.6);
+                }
+            }
+
+            // Draw R2-D2 (Left Side)
+            drawR2D2(w * 0.22, h * 0.75, 0.7);
+
+            // Draw C-3PO (Right Side)
+            drawC3PO(w * 0.82, h * 0.75, 0.7);
+
+            if (isDoorOpening) {
+                doorOpenProgress += 0.03;
+                if (doorOpenProgress >= 1) {
+                    doorOpenProgress = 1;
+                    isDoorOpening = false;
+                }
+            }
+
+            requestAnimationFrame(drawShipScene);
+        }
+
+        // Draw Stormtrooper
+        function drawStormtrooper(x, y, scale) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+
+            // Body Armor (White)
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+
+            // Legs
+            ctx.fillRect(-12, 10, 10, 35);
+            ctx.fillRect(2, 10, 10, 35);
+
+            // Chest & Shoulders
+            ctx.fillRect(-18, -25, 36, 35);
+            ctx.strokeRect(-18, -25, 36, 35);
+
+            // Black Joint Lines
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(-16, -5, 32, 4);
+
+            // Helmet
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(0, -38, 14, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Black Visor Band
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(-10, -42, 20, 5);
+            // Mouth Filter
+            ctx.fillRect(-4, -32, 8, 4);
+
+            // Blaster Rifle
+            ctx.fillRect(10, -15, 20, 5);
+
+            ctx.restore();
+        }
+
+        // Draw Gonk Droid
+        function drawGonkDroid(x, y, scale) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+
+            // Box Body
+            ctx.fillStyle = '#475569';
+            ctx.strokeStyle = '#020617';
+            ctx.lineWidth = 2;
+            ctx.fillRect(-20, -30, 40, 40);
+            ctx.strokeRect(-20, -30, 40, 40);
+
+            // Feet
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(-15, 10, 10, 15);
+            ctx.fillRect(5, 10, 10, 15);
+
+            // Middle Seam
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(-20, -10, 40, 4);
+
+            ctx.restore();
+        }
+
+        // Draw MSE-6 Mouse Droid
+        function drawMouseDroid(x, y, scale) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+
+            // Trapezoid Black Body
+            ctx.fillStyle = '#020617';
+            ctx.beginPath();
+            ctx.moveTo(-18, 0);
+            ctx.lineTo(-10, -15);
+            ctx.lineTo(10, -15);
+            ctx.lineTo(18, 0);
+            ctx.closePath();
+            ctx.fill();
+
+            // Wheels
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(-14, 0, 6, 4);
+            ctx.fillRect(8, 0, 6, 4);
+
+            ctx.restore();
+        }
+
+        // Draw R2-D2
+        function drawR2D2(x, y, scale) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+
+            // Ground Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(0, 45, 30, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Outer Legs
+            ctx.fillStyle = '#e2e8f0';
+            ctx.strokeStyle = '#020617';
+            ctx.lineWidth = 2;
+
+            // Left Leg
+            ctx.fillRect(-28, -20, 10, 55);
+            ctx.strokeRect(-28, -20, 10, 55);
+            // Right Leg
+            ctx.fillRect(18, -20, 10, 55);
+            ctx.strokeRect(18, -20, 10, 55);
+
+            // Feet
+            ctx.fillRect(-34, 30, 18, 12);
+            ctx.strokeRect(-34, 30, 18, 12);
+            ctx.fillRect(16, 30, 18, 12);
+            ctx.strokeRect(16, 30, 18, 12);
+
+            // Center Foot
+            ctx.fillRect(-8, 32, 16, 10);
+            ctx.strokeRect(-8, 32, 16, 10);
+
+            // White Main Body Cylinder
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(-20, -35, 40, 65);
+            ctx.strokeRect(-20, -35, 40, 65);
+
+            // Iconic R2 Blue Body Panels
+            ctx.fillStyle = '#1d4ed8';
+            ctx.fillRect(-15, -28, 8, 15);
+            ctx.fillRect(-15, -8, 8, 25);
+            ctx.fillRect(7, -28, 8, 15);
+            ctx.fillRect(7, -8, 8, 25);
+            ctx.fillRect(-4, 5, 8, 12);
+
+            // Metallic Silver Dome Head
+            ctx.fillStyle = '#cbd5e1';
+            ctx.beginPath();
+            ctx.arc(0, -35, 20, Math.PI, 0, false);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Dome Blue Band Details
+            ctx.fillStyle = '#1d4ed8';
+            ctx.fillRect(-16, -50, 32, 5);
+            ctx.fillRect(-12, -42, 24, 4);
+
+            // Primary Optical Lens
+            ctx.fillStyle = '#020617';
+            ctx.beginPath();
+            ctx.arc(0, -42, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Blinking Red Processor Status LED
+            ctx.fillStyle = (Math.floor(Date.now() / 400) % 2 === 0) ? '#ef4444' : '#991b1b';
+            ctx.beginPath();
+            ctx.arc(-8, -38, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Holographic Projector Lens
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.arc(6, -45, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Interactive Hacking Arm (Extends when opening doors)
+            if (isDoorOpening || doorOpenProgress > 0) {
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(15, -10);
+                ctx.lineTo(35, -15);
+                ctx.lineTo(45, -5);
+                ctx.stroke();
+
+                // Spark / Data transfer visual
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(43 + Math.random() * 4 - 2, -7 + Math.random() * 4 - 2, 3, 3);
+            }
+
+            ctx.restore();
+        }
+
+        // Draw C-3PO
+        function drawC3PO(x, y, scale) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(scale, scale);
+
+            // Body
+            ctx.fillStyle = '#eab308';
+            ctx.strokeStyle = '#713f12';
+            ctx.lineWidth = 2;
+
+            // Legs (Silver Right Leg)
+            ctx.fillRect(-20, -10, 12, 50); // Left Gold Leg
+            ctx.fillStyle = '#94a3b8'; // Silver Right Leg
+            ctx.fillRect(8, -10, 12, 50);
+
+            // Torso & Belly Wires
+            ctx.fillStyle = '#eab308';
+            ctx.fillRect(-22, -60, 44, 50);
+            ctx.strokeRect(-22, -60, 44, 50);
+
+            // Wires Midsection
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(-16, -35, 32, 12);
+            ctx.fillStyle = '#ef4444'; ctx.fillRect(-12, -32, 4, 6);
+            ctx.fillStyle = '#3b82f6'; ctx.fillRect(-4, -32, 4, 6);
+            ctx.fillStyle = '#eab308'; ctx.fillRect(4, -32, 4, 6);
+
+            // Head
+            ctx.beginPath();
+            ctx.arc(0, -72, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Eyes
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.arc(-6, -74, 4, 0, Math.PI * 2);
+            ctx.arc(6, -74, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // Draw C3PO Avatar Pixel Canvas
+        const avatarCanvas = document.getElementById('c3poAvatarCanvas');
+        const actx = avatarCanvas.getContext('2d');
+        function drawC3POAvatar() {
+            actx.fillStyle = '#000000';
+            actx.fillRect(0, 0, 80, 80);
+            
+            // Gold Head
+            actx.fillStyle = '#eab308';
+            actx.fillRect(20, 15, 40, 45);
+            
+            // Eyes
+            actx.fillStyle = '#fef08a';
+            actx.fillRect(28, 28, 8, 8);
+            actx.fillRect(44, 28, 8, 8);
+
+            // Mouth
+            actx.fillStyle = '#713f12';
+            actx.fillRect(32, 48, 16, 4);
+        }
+        drawC3POAvatar();
+
+        // Dialogue Typewriter Engine
+        let typeIndex = 0;
+        let dialogueTimer = null;
+
+        function setDialogue(text) {
+            const elem = document.getElementById('dialogueText');
+            const indicator = document.getElementById('typingIndicator');
+            elem.textContent = "";
+            typeIndex = 0;
+            clearInterval(dialogueTimer);
+            indicator.classList.remove('hidden');
+
+            dialogueTimer = setInterval(() => {
+                if (typeIndex < text.length) {
+                    elem.textContent += text.charAt(typeIndex);
+                    if (Math.random() < 0.4) playC3POSound();
+                    typeIndex++;
+                } else {
+                    clearInterval(dialogueTimer);
+                    indicator.classList.add('hidden');
+                }
+            }, 35);
+        }
+
+        function selectType(type) {
+            selectedType = type;
+            document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById(`type-${type}`).classList.add('selected');
+        }
+
+        function loadDoorQuestion() {
+            doorOpenProgress = 0;
+            selectedType = null;
+            document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('codeInput').value = "";
+            document.getElementById('doorStatusText').textContent = "VERGRENDELD";
+            document.getElementById('doorStatusText').className = "text-red-400";
+
+            currentQuestion = generateRandomQuestion(currentDoor - 1);
+            
+            document.getElementById('doorCounter').textContent = `${currentDoor} / ${totalDoors}`;
+            document.getElementById('problemText').textContent = currentQuestion.text;
+
+            // Dialogue hint per door
+            if (currentDoor === 1) {
+                setDialogue("Aanbiddelijke goedheid, R2! We zijn opgesloten! Bepaal welk type formule het slot vereist, reken de opties uit en hack de deur!");
+            } else if (currentDoor === 10) {
+                setDialogue("We zijn in de Cockpit! Dit is de laatste, zwaarste beveiligingscode om de hyperdrive te ontgrendelen!");
+            } else {
+                const c3poComments = [
+                    "Pas op R2, de beveiligingsprotocollen worden steeds ingewikkelder!",
+                    "Onthoud goed: Telt de volgorde wel of niet? En mag een cijfer herhaald worden?",
+                    "Snel R2, de time-out van de hoofdcomputer nadert!",
+                    "Ik hoop echt dat je rekenmatrix goed ingesteld staat..."
+                ];
+                setDialogue(c3poComments[Math.floor(Math.random() * c3poComments.length)]);
+            }
+        }
+
+        function submitCode() {
+            const userCode = parseInt(document.getElementById('codeInput').value);
+
+            if (!selectedType) {
+                setDialogue("R2! Je bent vergeten te selecteren welk type formule het is! (Permutatie, Combinatie of Herhaling)");
+                return;
+            }
+
+            if (isNaN(userCode)) {
+                setDialogue("Voer een geldig berekend getal in het vak in!");
+                return;
+            }
+
+            // Verify both type and calculated code
+            if (selectedType === currentQuestion.type && userCode === currentQuestion.answer) {
+                // Correct!
+                playDoorSound();
+                isDoorOpening = true;
+                document.getElementById('doorStatusText').textContent = "TOEGANG VERLEEND";
+                document.getElementById('doorStatusText').className = "text-emerald-400 font-bold";
+
+                if (currentDoor < totalDoors) {
+                    setDialogue("Uitstekend werk R2! De deur schuift open! Op naar de volgende!");
+                    setTimeout(() => {
+                        currentDoor++;
+                        // Sector Badge Update
+                        if (currentDoor >= 4 && currentDoor <= 6) {
+                            document.getElementById('sectorBadge').textContent = "Sector 2: Engineering";
+                        } else if (currentDoor >= 7) {
+                            document.getElementById('sectorBadge').textContent = "Sector 3: Command Deck & Cockpit";
+                        }
+                        loadDoorQuestion();
+                    }, 1800);
+                } else {
+                    // Game Win
+                    clearInterval(timerInterval);
+                    setTimeout(() => {
+                        document.getElementById('endTitle').textContent = "HYPERSPEED NAAR TATOOINE!";
+                        document.getElementById('endDescription').textContent = "Geweldig! Je hebt alle 10 de deuren gehackt, de cockpit ontgrendeld en bent succesvol ontsnapt naar Tatooine!";
+                        document.getElementById('endModal').classList.remove('hidden');
+                    }, 1500);
+                }
+            } else {
+                // Wrong
+                shields--;
+                updateShieldsDisplay();
+                playR2D2Sound();
+
+                if (shields <= 0) {
+                    // Game Over
+                    clearInterval(timerInterval);
+                    document.getElementById('endTitle').textContent = "GEVANGEN GENOMEN!";
+                    document.getElementById('endDescription').textContent = "De schilden zijn uitgeput en de Stormtroopers hebben R2-D2 en C-3PO overmeesterd.";
+                    document.getElementById('endModal').classList.remove('hidden');
+                } else {
+                    setDialogue("Ojee! Dat was niet juist. Bedenk goed of de volgorde telt en reken opnieuw!");
+                }
+            }
+        }
+
+        function updateShieldsDisplay() {
+            const container = document.getElementById('shieldsContainer');
+            container.innerHTML = "";
+            for (let i = 0; i < 3; i++) {
+                if (i < shields) {
+                    container.innerHTML += "<span>🛡️</span>";
+                } else {
+                    container.innerHTML += "<span class='opacity-20'>🛡️</span>";
+                }
+            }
+        }
+
+        // Calculator Functions
+        function calcInput(char) {
+            calcExpression += char;
+            document.getElementById('calcDisplay').textContent = calcExpression;
+        }
+
+        function calcClear() {
+            calcExpression = "";
+            document.getElementById('calcDisplay').textContent = "0";
+        }
+
+        function calcEvaluate() {
+            try {
+                // Replace ! with custom factorial replacement
+                let expr = calcExpression;
+
+                // Handle simple n! single numbers e.g. 5! -> factorial(5)
+                expr = expr.replace(/(\d+)!/g, "factorial($1)");
+                // Handle n^k -> Math.pow(n,k)
+                expr = expr.replace(/(\d+)\^(\d+)/g, "Math.pow($1,$2)");
+
+                const res = eval(expr);
+                document.getElementById('calcDisplay').textContent = res;
+                calcExpression = res.toString();
+            } catch (e) {
+                document.getElementById('calcDisplay').textContent = "FOUT";
+                calcExpression = "";
+            }
+        }
+
+        function useCalcResult() {
+            const val = document.getElementById('calcDisplay').textContent;
+            if (val !== "0" && val !== "FOUT") {
+                document.getElementById('codeInput').value = val;
+            }
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+                const secs = (timerSeconds % 60).toString().padStart(2, '0');
+                document.getElementById('timerDisplay').textContent = `${mins}:${secs}`;
+
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('endTitle').textContent = "TIJD IS OM!";
+                    document.getElementById('endDescription').textContent = "De 7 minuten zijn verstreken! Het ruimteschip is op verhoogd alarm gegaan.";
+                    document.getElementById('endModal').classList.remove('hidden');
+                }
+            }, 1000);
+        }
+
+        function toggleFormulaSheet() {
+            document.getElementById('formulaModal').classList.toggle('hidden');
+        }
+
+        function resetGame() {
+            currentDoor = 1;
+            shields = 3;
+            timerSeconds = 420;
+            updateShieldsDisplay();
+            document.getElementById('endModal').classList.add('hidden');
+            document.getElementById('sectorBadge').textContent = "Sector 1: Vrachtruim";
+            clearInterval(timerInterval);
+            startTimer();
+            loadDoorQuestion();
+        }
+
+        // Initialize Loop
+        window.onload = function() {
+            drawShipScene();
+            startTimer();
+            loadDoorQuestion();
+        };
+    </script>
+</body>
+</html>
